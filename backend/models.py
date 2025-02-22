@@ -1,10 +1,12 @@
-from flask_sqlalchemy import SQLAlchemy
 
-db = SQLAlchemy()
+class Task:
+    def __init__(self, id, name, start_date, end_date):
+        self.id = id
+        self.name = name
+        self.start_date = start_date
+        self.end_date = end_date
 
-class User(db.Model):
-    id = db.Column(db.Integer, primary_key = True)
-    name = db.Column(db.String(100), nullable = False)
-    lastname = db.Column(db.String(100), nullable = False)
-    github = db.Column(db.String(100), nullable = False)
+    def to_json(self):
+        pass
 
+        
