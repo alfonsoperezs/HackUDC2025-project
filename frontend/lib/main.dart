@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:curved_navigation_bar/curved_navigation_bar.dart';
+import 'package:intl/intl.dart';
 
 void main() {
   runApp(const MyApp());
@@ -59,7 +60,7 @@ class _HomeState extends State<Home> {
 
             child: const Center(
               child: Text(
-                "Taskinator",
+                "TASKINATOR",
                 style: TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
@@ -101,7 +102,7 @@ Widget _getScreen(int index) {
   if(index == 0) {
     return homePage();
   } else {
-    return buildList();
+    return addScreen();
   }
     
 }
@@ -148,21 +149,19 @@ Widget homePage() {
       )
     ],
   );
-  
-  
-  
-  
 }
 
 
 Widget buildList() {
   // Lista de tareas
-  final List<String> _tasks = [
-    'Study',
-    'Buy groceries',
-    'Walk the dog',
-    'Homework',
+  final List<Map<String, String>> _tasks = [
+    {'task': 'Study', 'time': '08:00 AM'},
+    {'task': 'Buy Groceries', 'time': '10:30 AM'},
+    {'task': 'Homework', 'time': '06:00 PM'},
   ];
+
+  // ValueNotifier (cambiar a Provider cuando se implemente BD) para manejar el estado de las tareas
+  final ValueNotifier<List<Map<String, dynamic>>> tasksFinished = ValueNotifier(_tasks);
 
   return Column(
     crossAxisAlignment: CrossAxisAlignment.start,
@@ -170,23 +169,123 @@ Widget buildList() {
       const Text(
         'Tasks for today:',
         style: TextStyle(
-          fontSize: 18,
+          fontSize: 25,
           fontWeight: FontWeight.bold,
         ),
       ),
       const SizedBox(height: 8),
-      ListView.builder(
-        shrinkWrap: true,
-        itemCount: _tasks.length,
-        itemBuilder: (context, index) {
-          return ListTile(
-            leading: const Icon(Icons.access_time),
-            title: Text(_tasks[index]),
+
+      ValueListenableBuilder<List<Map<String, dynamic>>>(
+        valueListenable: tasksFinished, 
+        builder: (context, tasks, child) {
+          return ListView.builder(
+            shrinkWrap: true,
+            itemCount: _tasks.length,
+            itemBuilder: (context, index) {
+              return ListTile(
+                leading: const Icon(Icons.access_time),
+                title: Text(_tasks[index]['task']!), // Muestra la tarea
+                subtitle: Text(_tasks[index]['time']!) // Muestra las horas a las que hacerse
+              );
+            },
           );
-        },
+        }  
       )
+
+      
     ],
   );
 }
 
 
+Widget addScreen() {
+  final TextEditingController nameController = TextEditingController();
+  final TextEditingController dateController = TextEditingController();
+
+  Future<void> _selectDate(BuildContext context) async {
+    DateTime? pickedDate = await showDatePicker(
+      context: context, 
+      initialDate: DateTime.now(),
+      firstDate: DateTime(2025, 1, 1), 
+      lastDate: DateTime(2025, 12, 31)
+    );
+
+    if(pickedDate != null) {
+      String formattedDate = DateFormat('yyyy-MM-dd').format(pickedDate);
+      dateController.text = formattedDate;
+    }
+  }
+
+
+  return Builder(
+    builder: (BuildContext context) {
+      return Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Campo de nombre de la tarea
+            const Text(
+              "Task title",
+              style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
+            ),
+
+            const SizedBox(height: 8), // espacio entre el título y el input
+            TextField(
+              controller: nameController,
+              decoration: InputDecoration(
+                filled: true,
+                fillColor: const Color.fromARGB(255, 225, 225, 225),
+                hintText: "Enter task name",
+                hintStyle: const TextStyle(color: Color.fromARGB(221, 97, 97, 97)),
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(15)),
+                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12)
+              ),
+            ),
+
+            const SizedBox(height: 16),
+
+            // Campo de selección de fecha límite
+            const Text(
+              "Due Date",
+              style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
+            ),
+
+            const SizedBox(height: 8),
+
+            TextField(
+              controller: dateController,
+              readOnly: true,
+              decoration: InputDecoration(
+                filled: true,
+                fillColor: const Color.fromARGB(255, 225, 225, 225),
+                hintText: "Select date",
+                hintStyle: const TextStyle(color: Color.fromARGB(221, 97, 97, 97)),
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(15)),
+                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                suffixIcon: const Icon(Icons.calendar_today),
+              ),
+
+              onTap:() => _selectDate(context), // Llama al selector de fecha
+            ),
+
+            const SizedBox(height: 16),
+
+            ElevatedButton(
+              onPressed: () {
+
+              }, 
+
+              child: const Center(
+                child: Text(
+                  'Add Task',
+                  style: TextStyle(fontSize: 20)
+                ),
+              ),
+            ),
+          ],
+        )
+      );
+    }
+  );
+}
