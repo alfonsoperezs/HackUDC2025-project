@@ -154,10 +154,10 @@ Widget homePage() {
 
 Widget buildList() {
   // Lista de tareas
-  final List<Map<String, String>> _tasks = [
-    {'task': 'Study', 'time': '08:00 AM'},
-    {'task': 'Buy Groceries', 'time': '10:30 AM'},
-    {'task': 'Homework', 'time': '06:00 PM'},
+  final List<Map<String, dynamic>> _tasks = [
+    {'task': 'Study', 'time': '08:00 AM', 'isDone': false},
+    {'task': 'Buy Groceries', 'time': '10:30 AM', 'isDone': false},
+    {'task': 'Homework', 'time': '06:00 PM', 'isDone': false},
   ];
 
   // ValueNotifier (cambiar a Provider cuando se implemente BD) para manejar el estado de las tareas
@@ -183,8 +183,20 @@ Widget buildList() {
             itemCount: _tasks.length,
             itemBuilder: (context, index) {
               return ListTile(
-                leading: const Icon(Icons.access_time),
-                title: Text(_tasks[index]['task']!), // Muestra la tarea
+                leading: Checkbox(
+                  value: tasks[index]['isDone'], 
+                  onChanged: (bool? value) {
+                    tasks[index]['isDone'] = value ?? false;
+                    tasksFinished.notifyListeners();
+                  },
+                ),
+                title: Text(_tasks[index]['task']!, // Muestra la tarea
+                style: TextStyle(
+                  decoration: tasks[index]['isDone']!
+                    ? TextDecoration.lineThrough
+                    : null,
+                  ),
+                ),
                 subtitle: Text(_tasks[index]['time']!) // Muestra las horas a las que hacerse
               );
             },
